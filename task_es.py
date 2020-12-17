@@ -1,12 +1,7 @@
-from datetime import datetime
 from elasticsearch import Elasticsearch
 import logging
-import os.path
 
 es = Elasticsearch()
-
-res = es.get(index="test1", id=1)
-print(res['_source'])
 
 def connect_elasticsearch():
     _es = None
@@ -30,9 +25,11 @@ def parcing(name_file, name_of_newfile='Log_nev.txt'):
     for line in name_file: 
         if 'PingWebSocketCM()' in line:
             result = line.split(" ")
-            date = str(result[0] + ' ' + result[1])
+            date = result[0] + ' ' + result[1]
+            date = ''.join(date)
             print(date)
-            echo = str(result[5:])
+            echo = result[5:]
+            echo = ' '.join(echo)
             print(echo)
             exp = {
                 'date': date,
@@ -47,8 +44,7 @@ def parcing(name_file, name_of_newfile='Log_nev.txt'):
 # 1. Open file
 f = open('Log.txt', 'r+')
 # 2. reading log.txt and parcing
-parcing(f)
 connect_elasticsearch()
-# 3. If the word matches, then it is entered into the database. Else string copied on new file 
-
+parcing(f)
+# 3. If the word matches, then it is entered into the database. Else string copied on new file
 f.close()
