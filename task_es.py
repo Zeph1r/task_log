@@ -25,18 +25,28 @@ def parcing(name_file, name_of_newfile='Log_nev.txt'):
     for line in name_file: 
         if 'PingWebSocketCM()' in line:
             result = line.split(" ")
-            date = result[0] + ' ' + result[1]
-            date = ''.join(date)
+            date = str(result[0]).replace("[", "") + ' ' + str(result[1]).replace("]", "")
             print(date)
-            echo = result[5:]
+            echo = result[3:]
             echo = ' '.join(echo)
             print(echo)
             exp = {
                 'date': date,
-                'echo': echo 
+                'message': echo
             }
             res = es.index(index="test1", body=exp)
-            
+        elif 'IPv6' in line:
+            result = line.split(" ")
+            date = str(result[0]).replace("[", "") + ' ' + str(result[1]).replace("]", "")
+            print(date)
+            echo = result[2:]
+            echo = ' '.join(echo)
+            print(echo)
+            exp = {
+                'date': date,
+                'message': echo
+            }
+            res = es.index(index="test1", body=exp)
         else:
             f.write(line)
     f.close()
