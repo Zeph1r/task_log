@@ -6,17 +6,13 @@ from elasticsearch import Elasticsearch
 
 es = Elasticsearch()
 # Function of search
-def search_date(string):
-    match = re.search('(\[\d+-\d+-\d+ \d+:\d+:\d+\])', string)
-    return match.group()
-
 def search_web(string):
-    match = re.search('[P]([\d\w,\(\)]+) (.+)', string)
-    return match.group()
+    match = re.search('(\[\d+-\d+-\d+ \d+:\d+:\d+\]) \[\d+,\d+\] ([\d\w,\(\)]+) (.+)', string)
+    return match.group(1), match.group(2), match.group(3)
 
 def search_ipv6(string):
-    match = re.search('[I]([\d\w,\(\)]+) (.+)', string)
-    return match.group()
+    match = re.search('(\[\d+-\d+-\d+ \d+:\d+:\d+\]) ([\d\w,\(\)]+) (.+)', string)
+    return match.group(1), match.group(2), match.group(3)
 
 def connect_elasticsearch():
     _es = None
@@ -39,23 +35,22 @@ def parcing(name_file, name_of_newfile='Log_nev.txt'):
     f = open(name_of_newfile, 'a')
     for line in name_file: 
         if 'PingWebSocketCM()' in line:
-            Type = 'PingWebSocketCM()'
-            date = search_date(line)
-            print(date)
-            message = search_web(line)
-            print(message)
-            exp = {
-                'date': date,
-                'message': message,
-                'type': Type
-            }
-            res = es.index(index="test1", body=exp)
+            try:
+                date, Type, message = search_web(line)
+                print(date)
+                print(message)
+                exp = {
+                    'date': date,
+                    'message': message,
+                    'type': Type
+                }
+                res = es.index(index="test1", body=exp)
+            except:
+                continue
         elif 'IPv6' in line:
-            date = search_date(line)
+            date, Type, message = search_ipv6(line)
             print(date)
-            Type = 'IPv6'
             print(Type)
-            message = search_ipv6(line)
             print(message)
             exp = {
                 'date': date,
