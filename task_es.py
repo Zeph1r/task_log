@@ -6,14 +6,6 @@ from elasticsearch import Elasticsearch
 
 es = Elasticsearch()
 # Function of search
-def search_web(string):
-    match = re.search('(\[\d+-\d+-\d+ \d+:\d+:\d+\]) \[\d+,\d+\] ([\d\w,\(\)]+) (.+)', string)
-    return match.group(1), match.group(2), match.group(3)
-
-def search_ipv6(string):
-    match = re.search('(\[\d+-\d+-\d+ \d+:\d+:\d+\]) ([\d\w,\(\)]+) (.+)', string)
-    return match.group(1), match.group(2), match.group(3)
-
 def connect_elasticsearch():
     _es = None
     _es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
@@ -25,6 +17,14 @@ def connect_elasticsearch():
 if __name__ == '__main__':
   logging.basicConfig(level=logging.ERROR)
 
+def esimport(date='date', Type='type', message='message'):
+    exp = {
+        'date': date,
+        'message': message,
+        'type': Type
+    }
+    res = es.index(index="test1", body=exp)
+
 def parcing(name_file, name_of_newfile='Log_nev.txt'):
     '''Parcing file
     
@@ -33,32 +33,25 @@ def parcing(name_file, name_of_newfile='Log_nev.txt'):
     is found, He push date and echo on database
     '''
     f = open(name_of_newfile, 'a')
-    for line in name_file: 
-        if 'PingWebSocketCM()' in line:
-            try:
-                date, Type, message = search_web(line)
-                print(date)
-                print(message)
-                exp = {
-                    'date': date,
-                    'message': message,
-                    'type': Type
-                }
-                res = es.index(index="test1", body=exp)
-            except:
-                continue
-        elif 'IPv6' in line:
-            date, Type, message = search_ipv6(line)
+    for line in name_file:
+        try:
+            match = re.search('(\[\d+-\d+-\d+ \d+:\d+:\d+\]) \[\d+,\d+\] ([\d\w,\(\)]+) (.+)', line)
+            date, Type, message = match.group(1), match.group(2), match.group(3)
+            print(date)
+            print(message)
+            esimport(date, Type, message)
+            continue
+        except:
+            pass
+        try:
+            match = re.search('(\[\d+-\d+-\d+ \d+:\d+:\d+\]) ([\d\w,\(\)]+) (.+)', line)
+            date, Type, message = match.group(1), match.group(2), match.group(3)
             print(date)
             print(Type)
             print(message)
-            exp = {
-                'date': date,
-                'message': message,
-                'type': Type
-                }
-            res = es.index(index="test1", body=exp)
-        else:
+            esimport(date, Type, message)
+            continue
+        except:
             f.write(line)
     f.close()
 
