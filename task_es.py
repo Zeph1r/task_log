@@ -37,6 +37,8 @@ def parcing(name_file, name_of_newfile='Log_nev.txt'):
         try:
             match = re.search('(\[\d+-\d+-\d+ \d+:\d+:\d+\]) \[\d+,\d+\] ([\d\w,\(\)]+) (.+)', line)
             date, Type, message = match.group(1), match.group(2), match.group(3)
+            date = date.replace("[", "")
+            date = date.replace("]", "")
             print(date)
             print(message)
             esimport(date, Type, message)
@@ -46,6 +48,8 @@ def parcing(name_file, name_of_newfile='Log_nev.txt'):
         try:
             match = re.search('(\[\d+-\d+-\d+ \d+:\d+:\d+\]) ([\d\w,\(\)]+) (.+)', line)
             date, Type, message = match.group(1), match.group(2), match.group(3)
+            date = date.replace("[", "")
+            date = date.replace("]", "")
             print(date)
             print(Type)
             print(message)
